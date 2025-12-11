@@ -21,6 +21,12 @@ Analyze this image of a damaged package. Provide a JSON assessment with:
 Respond ONLY with valid JSON, no other text.
 PROMPT;
 
+    private const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1';
+
+    private const DEFAULT_MODEL = 'anthropic/claude-sonnet-4';
+
+    private const STORAGE_DISK = 'public';
+
     private string $apiKey;
 
     private string $baseUrl;
@@ -30,13 +36,18 @@ PROMPT;
     /**
      * Create a new OpenRouterService instance.
      *
+     * Configuration can be injected directly for testing, or defaults from config will be used.
+     *
      * @throws OpenRouterException
      */
-    public function __construct()
-    {
-        $this->apiKey = config('services.openrouter.api_key') ?? '';
-        $this->baseUrl = config('services.openrouter.base_url') ?? 'https://openrouter.ai/api/v1';
-        $this->model = config('services.openrouter.model') ?? 'anthropic/claude-sonnet-4';
+    public function __construct(
+        ?string $apiKey = null,
+        ?string $baseUrl = null,
+        ?string $model = null,
+    ) {
+        $this->apiKey = $apiKey ?? config('services.openrouter.api_key') ?? '';
+        $this->baseUrl = $baseUrl ?? config('services.openrouter.base_url') ?? self::DEFAULT_BASE_URL;
+        $this->model = $model ?? config('services.openrouter.model') ?? self::DEFAULT_MODEL;
 
         if (empty($this->apiKey)) {
             throw OpenRouterException::missingConfiguration('api_key');
@@ -103,12 +114,12 @@ PROMPT;
      */
     private function readImageAsBase64(string $imagePath): string
     {
-        if (! Storage::disk('public')->exists($imagePath)) {
+        if (! Storage::disk(self::STORAGE_DISK)->exists($imagePath)) {
             throw OpenRouterException::invalidResponse("Image not found at path: {$imagePath}");
         }
 
-        $imageContent = Storage::disk('public')->get($imagePath);
-        $mimeType = Storage::disk('public')->mimeType($imagePath);
+        $imageContent = Storage::disk(self::STORAGE_DISK)->get($imagePath);
+        $mimeType = Storage::disk(self::STORAGE_DISK)->mimeType($imagePath);
 
         if ($imageContent === null) {
             throw OpenRouterException::invalidResponse("Could not read image at path: {$imagePath}");

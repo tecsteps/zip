@@ -65,11 +65,12 @@ class DamageReportPolicy
 
     /**
      * Determine whether the user can modify a draft report.
-     * Only the owner can modify their own draft reports.
+     * Only drivers who own the report can modify their own draft reports.
      */
     private function canModifyDraft(User $user, DamageReport $damageReport): bool
     {
-        return $this->isOwner($user, $damageReport)
+        return $user->isDriver()
+            && $this->isOwner($user, $damageReport)
             && $damageReport->status === ReportStatus::Draft;
     }
 }
