@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\UserRole;
 use App\Models\User;
 
@@ -8,7 +10,7 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 test('registration screen can be rendered', function () {
     $response = $this->get(route('register'));
 
-    $response->assertStatus(200);
+    $response->assertOk();
 });
 
 test('new users can register', function () {
