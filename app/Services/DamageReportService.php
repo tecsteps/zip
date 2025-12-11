@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\ReportStatus;
+use App\Jobs\AnalyzeDamageReportJob;
 use App\Models\DamageReport;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -58,6 +59,8 @@ class DamageReportService
             'status' => ReportStatus::Submitted,
             'submitted_at' => now(),
         ]);
+
+        AnalyzeDamageReportJob::dispatch($report);
     }
 
     /**
@@ -66,7 +69,7 @@ class DamageReportService
     public function storePhoto(TemporaryUploadedFile $photo, int $userId): string
     {
         $extension = $photo->getClientOriginalExtension();
-        $filename = Str::uuid()->toString() . '.' . $extension;
+        $filename = Str::uuid()->toString().'.'.$extension;
 
         return $photo->storeAs(
             "damage-reports/{$userId}",
@@ -95,7 +98,11 @@ class DamageReportService
         $reportData = $this->buildReportData($user, $data, ReportStatus::Submitted);
         $reportData['submitted_at'] = now();
 
-        return DamageReport::create($reportData);
+        $report = DamageReport::create($reportData);
+
+        AnalyzeDamageReportJob::dispatch($report);
+
+        return $report;
     }
 
     /**

@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Enums\ReportStatus;
+use App\Jobs\AnalyzeDamageReportJob;
 use App\Livewire\Driver\CreateReport;
 use App\Models\DamageReport;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
@@ -499,6 +501,49 @@ describe('submit', function () {
         $report = DamageReport::first();
 
         expect($report->user_id)->toBe($driver->id);
+    });
+
+    test('submit dispatches AnalyzeDamageReportJob', function () {
+        Storage::fake('public');
+        Queue::fake();
+
+        $driver = User::factory()->driver()->create();
+        $file = UploadedFile::fake()->image('photo.jpg');
+
+        Livewire::actingAs($driver)
+            ->test(CreateReport::class)
+            ->set('photo', $file)
+            ->set('package_id', 'PKG-12345')
+            ->set('location', '123 Main St')
+            ->call('submit');
+
+        $report = DamageReport::first();
+
+        Queue::assertPushed(AnalyzeDamageReportJob::class, function ($job) use ($report) {
+            return $job->damageReport->id === $report->id;
+        });
+    });
+
+    test('newly submitted report has NULL ai_severity fields', function () {
+        Storage::fake('public');
+        Queue::fake();
+
+        $driver = User::factory()->driver()->create();
+        $file = UploadedFile::fake()->image('photo.jpg');
+
+        Livewire::actingAs($driver)
+            ->test(CreateReport::class)
+            ->set('photo', $file)
+            ->set('package_id', 'PKG-12345')
+            ->set('location', '123 Main St')
+            ->call('submit');
+
+        $report = DamageReport::first();
+
+        expect($report->ai_severity)->toBeNull()
+            ->and($report->ai_damage_type)->toBeNull()
+            ->and($report->ai_value_impact)->toBeNull()
+            ->and($report->ai_liability)->toBeNull();
     });
 });
 
