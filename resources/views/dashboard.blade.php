@@ -8,13 +8,7 @@
         </div>
 
         @if(auth()->user()->isDriver())
-            {{-- Driver Dashboard Content --}}
-            <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
-                <flux:heading size="lg" class="mb-4">My Reports</flux:heading>
-                <flux:text class="text-zinc-500 dark:text-zinc-400">
-                    Your damage reports will appear here.
-                </flux:text>
-            </div>
+            <livewire:driver.dashboard />
         @else
             {{-- Supervisor Dashboard Content --}}
             <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">

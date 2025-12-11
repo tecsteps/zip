@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Driver\CreateReport;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -14,6 +15,10 @@ Route::get('/', function () {
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+Route::middleware(['auth', 'verified', 'driver'])->group(function () {
+    Route::get('driver/reports/create', CreateReport::class)->name('driver.reports.create');
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
