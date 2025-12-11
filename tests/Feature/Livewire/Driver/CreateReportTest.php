@@ -393,6 +393,10 @@ describe('save draft', function () {
 });
 
 describe('submit', function () {
+    beforeEach(function () {
+        Queue::fake();
+    });
+
     test('can submit report with valid data', function () {
         Storage::fake('public');
 
