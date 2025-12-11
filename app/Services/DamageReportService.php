@@ -10,6 +10,7 @@ use App\Models\DamageReport;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
@@ -103,6 +104,52 @@ class DamageReportService
         AnalyzeDamageReportJob::dispatch($report);
 
         return $report;
+    }
+
+    /**
+     * Update an existing draft damage report.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function update(DamageReport $report, array $data): DamageReport
+    {
+        $report->update([
+            'package_id' => $data['package_id'],
+            'location' => $data['location'],
+            'description' => $data['description'] ?? null,
+            'photo_path' => $data['photo_path'],
+        ]);
+
+        return $report;
+    }
+
+    /**
+     * Update an existing draft damage report and submit it.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function updateAndSubmit(DamageReport $report, array $data): DamageReport
+    {
+        $report->update([
+            'package_id' => $data['package_id'],
+            'location' => $data['location'],
+            'description' => $data['description'] ?? null,
+            'photo_path' => $data['photo_path'],
+            'status' => ReportStatus::Submitted,
+            'submitted_at' => now(),
+        ]);
+
+        AnalyzeDamageReportJob::dispatch($report);
+
+        return $report;
+    }
+
+    /**
+     * Delete a photo from storage.
+     */
+    public function deletePhoto(string $photoPath): void
+    {
+        Storage::disk('public')->delete($photoPath);
     }
 
     /**
