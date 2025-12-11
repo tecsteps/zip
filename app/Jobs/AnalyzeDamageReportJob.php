@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Exceptions\OpenRouterException;
 use App\Models\DamageReport;
+use App\Services\OpenRouterService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -34,9 +36,24 @@ class AnalyzeDamageReportJob implements ShouldQueue
 
     /**
      * Execute the job.
+     *
+     * @throws OpenRouterException
      */
-    public function handle(): void
+    public function handle(OpenRouterService $openRouterService): void
     {
-        // AI analysis will be implemented in Feature 4
+        $photoPath = $this->damageReport->photo_path;
+
+        if (empty($photoPath)) {
+            return;
+        }
+
+        $analysis = $openRouterService->analyzeDamagePhoto($photoPath);
+
+        $this->damageReport->update([
+            'ai_severity' => $analysis['severity'],
+            'ai_damage_type' => $analysis['damage_type'],
+            'ai_value_impact' => $analysis['value_impact'],
+            'ai_liability' => $analysis['liability'],
+        ]);
     }
 }
