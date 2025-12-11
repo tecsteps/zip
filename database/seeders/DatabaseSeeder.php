@@ -13,11 +13,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Create two driver test users
+        User::factory()->driver()->create([
+            'name' => 'Driver One',
+            'email' => 'driver1@zip.test',
+            'password' => 'password',
         ]);
+
+        User::factory()->driver()->create([
+            'name' => 'Driver Two',
+            'email' => 'driver2@zip.test',
+            'password' => 'password',
+        ]);
+
+        // Create supervisor
+        $this->call(SupervisorSeeder::class);
     }
 }

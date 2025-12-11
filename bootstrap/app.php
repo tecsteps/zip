@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'driver' => \App\Http\Middleware\EnsureUserIsDriver::class,
+            'supervisor' => \App\Http\Middleware\EnsureUserIsSupervisor::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

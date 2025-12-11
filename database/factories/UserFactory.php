@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -29,9 +30,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-            'two_factor_secret' => Str::random(10),
-            'two_factor_recovery_codes' => Str::random(10),
-            'two_factor_confirmed_at' => now(),
+            'role' => UserRole::Driver,
         ];
     }
 
@@ -46,14 +45,22 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the model does not have two-factor authentication configured.
+     * Indicate that the user is a driver.
      */
-    public function withoutTwoFactor(): static
+    public function driver(): static
     {
         return $this->state(fn (array $attributes) => [
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
+            'role' => UserRole::Driver,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a supervisor.
+     */
+    public function supervisor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Supervisor,
         ]);
     }
 }
