@@ -23,7 +23,7 @@ class CreateReport extends Component
     use WithFileUploads;
 
     /** @var TemporaryUploadedFile|null */
-    #[Validate('required|image|max:5120')]
+    #[Validate('required|image|max:5120|mimes:jpg,jpeg,png,webp')]
     public $photo = null;
 
     #[Validate('required|string|max:255')]
@@ -37,9 +37,12 @@ class CreateReport extends Component
 
     private DamageReportService $damageReportService;
 
-    public function __construct()
+    /**
+     * Initialize the service on every request.
+     */
+    public function boot(DamageReportService $damageReportService): void
     {
-        $this->damageReportService = app(DamageReportService::class);
+        $this->damageReportService = $damageReportService;
     }
 
     /**

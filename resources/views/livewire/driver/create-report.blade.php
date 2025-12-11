@@ -133,18 +133,24 @@
             <flux:button
                 type="button"
                 wire:click="saveDraft"
+                wire:loading.attr="disabled"
+                wire:target="saveDraft,submit"
                 variant="filled"
                 class="w-full sm:w-auto"
             >
-                Save Draft
+                <span wire:loading.remove wire:target="saveDraft">Save Draft</span>
+                <span wire:loading wire:target="saveDraft">Saving...</span>
             </flux:button>
 
             <flux:button
                 type="submit"
+                wire:loading.attr="disabled"
+                wire:target="saveDraft,submit"
                 variant="primary"
                 class="w-full sm:w-auto"
             >
-                Submit Report
+                <span wire:loading.remove wire:target="submit">Submit Report</span>
+                <span wire:loading wire:target="submit">Submitting...</span>
             </flux:button>
         </div>
     </form>

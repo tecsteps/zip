@@ -16,12 +16,15 @@ class Dashboard extends Component
 {
     public ?int $reportToDelete = null;
 
-    public function __construct()
-    {
-        $this->damageReportService = app(DamageReportService::class);
-    }
-
     private DamageReportService $damageReportService;
+
+    /**
+     * Initialize the service on every request.
+     */
+    public function boot(DamageReportService $damageReportService): void
+    {
+        $this->damageReportService = $damageReportService;
+    }
 
     /**
      * @return Collection<int, DamageReport>
