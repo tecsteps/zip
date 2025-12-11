@@ -153,6 +153,19 @@ class DamageReportService
     }
 
     /**
+     * Check if a driver has any pending reports awaiting AI analysis.
+     * A pending report is one that has been submitted but has not yet received an AI severity assessment.
+     */
+    public function hasPendingReportsForDriver(User $driver): bool
+    {
+        return DamageReport::query()
+            ->forDriver($driver)
+            ->where('status', ReportStatus::Submitted)
+            ->whereNull('ai_severity')
+            ->exists();
+    }
+
+    /**
      * Build the report data array for creation.
      *
      * @param  array<string, mixed>  $data

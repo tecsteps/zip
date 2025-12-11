@@ -15,12 +15,15 @@
     };
 
     $severityColor = match($report->ai_severity) {
-        'low' => 'sky',
+        'minor', 'low' => 'green',
         'moderate' => 'amber',
-        'high' => 'orange',
+        'severe', 'high' => 'red',
         'critical' => 'red',
         default => 'zinc',
     };
+
+    $isPendingAnalysis = $report->status === ReportStatus::Submitted && $report->ai_severity === null;
+    $showSeverityBadge = $report->status !== ReportStatus::Draft && ($report->ai_severity !== null || $isPendingAnalysis);
 @endphp
 
 <div class="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white transition-shadow hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900">
@@ -48,8 +51,12 @@
                 <flux:heading size="sm" class="truncate">{{ $report->package_id }}</flux:heading>
                 <div class="flex shrink-0 gap-1">
                     <flux:badge size="sm" :color="$badgeColor">{{ $statusLabel }}</flux:badge>
-                    @if ($report->ai_severity)
-                        <flux:badge size="sm" :color="$severityColor">{{ ucfirst($report->ai_severity) }}</flux:badge>
+                    @if ($showSeverityBadge)
+                        @if ($isPendingAnalysis)
+                            <flux:badge size="sm" color="amber">Analyzing...</flux:badge>
+                        @else
+                            <flux:badge size="sm" :color="$severityColor">{{ ucfirst($report->ai_severity) }}</flux:badge>
+                        @endif
                     @endif
                 </div>
             </div>

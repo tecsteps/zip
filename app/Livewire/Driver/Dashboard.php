@@ -10,6 +10,7 @@ use App\Services\DamageReportService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class Dashboard extends Component
@@ -40,6 +41,15 @@ class Dashboard extends Component
     public function getHasReportsProperty(): bool
     {
         return $this->reports->isNotEmpty();
+    }
+
+    #[Computed]
+    public function hasPendingReports(): bool
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        return $this->damageReportService->hasPendingReportsForDriver($user);
     }
 
     public function delete(int $reportId): void

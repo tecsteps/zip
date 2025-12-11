@@ -7,6 +7,7 @@ use App\Livewire\Driver\Dashboard;
 use App\Models\DamageReport;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -88,8 +89,8 @@ describe('action buttons visibility', function () {
             ->test(Dashboard::class)
             ->assertSee($report->package_id)
             ->assertDontSee('Edit')
-            ->assertDontSeeHtml('wire:click="submit(' . $report->id . ')"')
-            ->assertDontSeeHtml('reportId: ' . $report->id);
+            ->assertDontSeeHtml('wire:click="submit('.$report->id.')"')
+            ->assertDontSeeHtml('reportId: '.$report->id);
     });
 
     test('approved reports hide action buttons', function () {
@@ -100,8 +101,8 @@ describe('action buttons visibility', function () {
             ->test(Dashboard::class)
             ->assertSee($report->package_id)
             ->assertDontSee('Edit')
-            ->assertDontSeeHtml('wire:click="submit(' . $report->id . ')"')
-            ->assertDontSeeHtml('reportId: ' . $report->id);
+            ->assertDontSeeHtml('wire:click="submit('.$report->id.')"')
+            ->assertDontSeeHtml('reportId: '.$report->id);
     });
 });
 
@@ -205,6 +206,8 @@ describe('delete action', function () {
 
 describe('submit action', function () {
     test('can submit a draft report', function () {
+        Queue::fake();
+
         $driver = User::factory()->driver()->create();
         $report = DamageReport::factory()->draft()->create(['user_id' => $driver->id]);
 
@@ -310,5 +313,127 @@ describe('computed properties', function () {
 
         expect($reports)->toHaveCount(3)
             ->and($reports->first())->toBeInstanceOf(DamageReport::class);
+    });
+
+    test('hasPendingReports returns true when submitted reports without ai_severity exist', function () {
+        $driver = User::factory()->driver()->create();
+        DamageReport::factory()->submitted()->create([
+            'user_id' => $driver->id,
+            'ai_severity' => null,
+        ]);
+
+        Livewire::actingAs($driver)
+            ->test(Dashboard::class)
+            ->assertSet('hasPendingReports', true);
+    });
+
+    test('hasPendingReports returns false when submitted reports have ai_severity', function () {
+        $driver = User::factory()->driver()->create();
+        DamageReport::factory()->submitted()->create([
+            'user_id' => $driver->id,
+            'ai_severity' => 'moderate',
+        ]);
+
+        Livewire::actingAs($driver)
+            ->test(Dashboard::class)
+            ->assertSet('hasPendingReports', false);
+    });
+
+    test('hasPendingReports returns false when no submitted reports exist', function () {
+        $driver = User::factory()->driver()->create();
+        DamageReport::factory()->draft()->create(['user_id' => $driver->id]);
+
+        Livewire::actingAs($driver)
+            ->test(Dashboard::class)
+            ->assertSet('hasPendingReports', false);
+    });
+
+    test('hasPendingReports returns false when only approved reports exist', function () {
+        $driver = User::factory()->driver()->create();
+        DamageReport::factory()->approved()->create([
+            'user_id' => $driver->id,
+            'ai_severity' => null,
+        ]);
+
+        Livewire::actingAs($driver)
+            ->test(Dashboard::class)
+            ->assertSet('hasPendingReports', false);
+    });
+});
+
+describe('severity badges', function () {
+    test('pending reports show Analyzing badge', function () {
+        $driver = User::factory()->driver()->create();
+        DamageReport::factory()->submitted()->create([
+            'user_id' => $driver->id,
+            'ai_severity' => null,
+        ]);
+
+        Livewire::actingAs($driver)
+            ->test(Dashboard::class)
+            ->assertSee('Analyzing...');
+    });
+
+    test('completed reports show severity badge', function (string $severity) {
+        $driver = User::factory()->driver()->create();
+        DamageReport::factory()->submitted()->create([
+            'user_id' => $driver->id,
+            'ai_severity' => $severity,
+        ]);
+
+        Livewire::actingAs($driver)
+            ->test(Dashboard::class)
+            ->assertSee(ucfirst($severity))
+            ->assertDontSee('Analyzing...');
+    })->with(['low', 'moderate', 'high', 'critical']);
+
+    test('draft reports do not show severity badge', function () {
+        $driver = User::factory()->driver()->create();
+        DamageReport::factory()->draft()->create([
+            'user_id' => $driver->id,
+            'ai_severity' => null,
+        ]);
+
+        Livewire::actingAs($driver)
+            ->test(Dashboard::class)
+            ->assertDontSee('Analyzing...');
+    });
+
+    test('draft reports do not show severity badge even if ai_severity is set', function () {
+        $driver = User::factory()->driver()->create();
+        DamageReport::factory()->draft()->create([
+            'user_id' => $driver->id,
+            'ai_severity' => 'moderate',
+        ]);
+
+        Livewire::actingAs($driver)
+            ->test(Dashboard::class)
+            ->assertDontSee('Moderate');
+    });
+});
+
+describe('polling', function () {
+    test('wire:poll is present when pending reports exist', function () {
+        $driver = User::factory()->driver()->create();
+        DamageReport::factory()->submitted()->create([
+            'user_id' => $driver->id,
+            'ai_severity' => null,
+        ]);
+
+        Livewire::actingAs($driver)
+            ->test(Dashboard::class)
+            ->assertSeeHtml('wire:poll.3s');
+    });
+
+    test('wire:poll is not present when no pending reports exist', function () {
+        $driver = User::factory()->driver()->create();
+        DamageReport::factory()->submitted()->create([
+            'user_id' => $driver->id,
+            'ai_severity' => 'moderate',
+        ]);
+
+        Livewire::actingAs($driver)
+            ->test(Dashboard::class)
+            ->assertDontSeeHtml('wire:poll.3s');
     });
 });

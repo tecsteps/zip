@@ -1,4 +1,4 @@
-<div>
+<div @if($this->hasPendingReports) wire:poll.3s @endif>
     <flux:heading size="lg" class="mb-6">My Reports</flux:heading>
 
     @if ($this->hasReports)
