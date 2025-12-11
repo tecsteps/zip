@@ -104,7 +104,46 @@ Instructions:
 7. Run `vendor/bin/pint --dirty` after implementation
 ```
 
-### 1.3 Test Writing (Pest Test Writer)
+### 1.3 OpenRouter Integration (Conditional)
+
+**Only execute this step if the specification mentions AI, LLM, OpenRouter, or AI-powered features.**
+
+Use the Task tool with `subagent_type=openrouter-specialist`:
+
+```
+Implement OpenRouter integration for Phase {N} of the feature specification.
+
+Specification file: {spec_path}
+Questions file: {questions_path}
+Working directory: {worktree_path}
+
+AI/LLM Requirements for this phase:
+{Copy the AI/LLM-specific requirements from the spec}
+
+Instructions:
+1. Read the full specification and questions files first
+2. Check existing OpenRouter integration patterns in the project (if any)
+3. Consult OpenRouter documentation for:
+   - Optimal model selection for the use case
+   - API integration best practices
+   - Rate limiting and error handling
+   - Cost optimization strategies
+4. Implement the AI/LLM integration following Laravel conventions
+5. Create appropriate service classes for OpenRouter API calls
+6. Implement proper error handling and fallbacks
+7. Add configuration options to config files (not hardcoded)
+8. Run `vendor/bin/pint --dirty` after implementation
+
+Focus on:
+- Service classes for OpenRouter API communication
+- Model selection logic (if multiple models needed)
+- Prompt engineering and template management
+- Response parsing and validation
+- Rate limiting and retry logic
+- Cost tracking (if specified)
+```
+
+### 1.4 Test Writing (Pest Test Writer)
 
 Use the Task tool with `subagent_type=pest-test-writer`:
 
@@ -131,7 +170,7 @@ Instructions:
 6. For Livewire/Volt components, use appropriate test helpers
 ```
 
-### 1.4 Phase Verification
+### 1.5 Phase Verification
 
 After each phase:
 

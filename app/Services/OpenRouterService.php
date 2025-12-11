@@ -12,13 +12,42 @@ use Illuminate\Support\Facades\Storage;
 class OpenRouterService
 {
     private const ANALYSIS_PROMPT = <<<'PROMPT'
-Analyze this image of a damaged package. Provide a JSON assessment with:
-- severity: "minor", "moderate", or "severe"
-- damage_type: type of damage (e.g., "crushed", "wet", "torn", "punctured")
-- value_impact: "low", "medium", "high", or "total_loss"
-- liability: "carrier", "sender", "recipient", or "unknown"
+You are a package damage assessment expert. Analyze this image of a damaged package and provide a structured assessment.
 
-Respond ONLY with valid JSON, no other text.
+## Assessment Criteria
+
+### severity (required)
+- "minor": Superficial damage only (scuffs, small dents, minor tears). Packaging integrity maintained. Contents likely unaffected.
+- "moderate": Visible structural damage (crushed corners, holes, significant tears). Packaging compromised. Contents possibly affected.
+- "severe": Major structural failure (collapsed box, large holes, severe water damage). Contents likely damaged or destroyed.
+
+### damage_type (required)
+Identify the PRIMARY type of damage visible:
+- "crushed": Compression damage, collapsed structure, flattened areas
+- "wet": Water damage, staining, warping from moisture
+- "torn": Ripped packaging, exposed contents
+- "punctured": Holes from impact or sharp objects
+- "burned": Fire or heat damage, scorch marks
+- "contaminated": Spills, stains from foreign substances
+
+### value_impact (required)
+Estimate the impact on the contents' value:
+- "low": Contents likely undamaged, package still protective (<10% value loss)
+- "medium": Contents may have minor damage, some protection compromised (10-50% value loss)
+- "high": Contents likely damaged, significant protection failure (50-90% value loss)
+- "total_loss": Contents destroyed or unsalvageable (>90% value loss)
+
+### liability (required)
+Determine the most likely responsible party based on damage characteristics:
+- "carrier": Damage consistent with shipping/handling (impact damage, crushing from stacking, weather exposure during transit)
+- "sender": Damage suggests inadequate packaging (insufficient padding, wrong box size, fragile items not marked)
+- "recipient": Damage appears to have occurred after delivery (opened package, delayed reporting)
+- "unknown": Insufficient evidence to determine responsibility
+
+## Response Format
+Respond ONLY with valid JSON containing these four fields. No explanations or additional text.
+
+Example: {"severity": "moderate", "damage_type": "crushed", "value_impact": "medium", "liability": "carrier"}
 PROMPT;
 
     private const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1';
