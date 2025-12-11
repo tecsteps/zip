@@ -68,7 +68,7 @@
     @if ($report->status === ReportStatus::Draft)
         <div class="relative z-20 flex border-t border-zinc-200 dark:border-zinc-700">
             <flux:button
-                href="#"
+                href="{{ route('driver.reports.edit', $report) }}"
                 variant="ghost"
                 size="sm"
                 icon="pencil"
