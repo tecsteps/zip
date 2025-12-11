@@ -25,21 +25,21 @@ Parse the spec file path to extract:
 4. Create a todo list tracking all phases
 
 ### 0.3 Create Git Work Tree
-Execute the following steps:
+Execute the following steps from the project directory:
 ```bash
-# Navigate to parent directory and create worktree
-cd .. && git -C zip worktree add -b {branch_name} {feature_name}-worktree
+# Create worktree in parent directory (outside the workspace)
+git worktree add -b {branch_name} ../zip-{feature_name}-worktree
 ```
 
 If the branch already exists, use:
 ```bash
-cd .. && git -C zip worktree add {feature_name}-worktree {branch_name}
+git worktree add ../zip-{feature_name}-worktree {branch_name}
 ```
 
 ### 0.4 Change Working Directory
 All subsequent work must happen in the worktree:
 ```bash
-cd ../{feature_name}-worktree
+cd ../zip-{feature_name}-worktree
 ```
 
 ---
@@ -387,7 +387,7 @@ Inform the user:
 - Summary of what was implemented
 - Any notes or decisions made during implementation
 - Documentation updates made
-- Worktree location for manual testing: `../zip-{feature_name}-worktree`
+- Worktree location for manual testing: `../zip-{feature_name}-worktree` (created in parent directory, outside the workspace)
 
 ---
 
